@@ -6,18 +6,19 @@ from sklearn.metrics import accuracy_score
 import os
 import argparse
 
+
 def train_model(version):
     print(f"Training model for version: {version}")
-    
+
     # Load parameters
-    with open('params.yaml', 'r') as f:
+    with open((os.path.join(os.getcwd(), "params.yaml")), "r") as f:
         params = yaml.safe_load(f)
-    
+
     # Load specific version data
-    x_train = np.load(f'data/raw/x_train_{version}.npy')
-    y_train = np.load(f'data/raw/y_train_{version}.npy')
-    x_test = np.load('data/raw/x_test.npy')
-    y_test = np.load('data/raw/y_test.npy')
+    x_train = np.load(f"data/raw/x_train_{version}.npy")
+    y_train = np.load(f"data/raw/y_train_{version}.npy")
+    x_test = np.load("data/raw/x_test.npy")
+    y_test = np.load("data/raw/y_test.npy")
 
     # Flatten and normalize
     x_train_flat = x_train.reshape(x_train.shape[0], -1) / 255.0
@@ -27,11 +28,11 @@ def train_model(version):
     print(f"Model parameters: {params['model']}")
 
     # Use parameters from params.yaml
-    model_params = params['model']
+    model_params = params["model"]
     model = RandomForestClassifier(
-        n_estimators=model_params['n_estimators'],
-        max_depth=model_params['max_depth'],
-        random_state=model_params['random_state']
+        n_estimators=model_params["n_estimators"],
+        max_depth=model_params["max_depth"],
+        random_state=model_params["random_state"],
     )
     model.fit(x_train_flat, y_train)
 
@@ -42,25 +43,26 @@ def train_model(version):
     print(f"Accuracy: {accuracy:.4f}")
 
     # Save model and metrics with version
-    os.makedirs('models', exist_ok=True)
-    np.save(f'models/model_{version}.npy', model)
+    os.makedirs("models", exist_ok=True)
+    np.save(f"models/model_{version}.npy", model)
 
     metrics = {
-        'accuracy': float(accuracy),
-        'dataset_size': len(x_train),
-        'dataset_version': version,
-        'model': f'model_{version}',
-        'parameters': params['model']
+        "accuracy": float(accuracy),
+        "dataset_size": len(x_train),
+        "dataset_version": version,
+        "model": f"model_{version}",
+        "parameters": params["model"],
     }
-    
-    with open(f'models/metrics_{version}.json', 'w') as f:
+
+    with open(f"models/metrics_{version}.json", "w") as f:
         json.dump(metrics, f, indent=2)
 
     print(f"Model and metrics saved for {version}!")
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--version', required=True, choices=['v1', 'v2', 'v3'])
+    parser.add_argument("--version", required=True, choices=["v1", "v2", "v3"])
     args = parser.parse_args()
-    
+
     train_model(args.version)
